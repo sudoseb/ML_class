@@ -1,10 +1,9 @@
 
 import pandas as pd
-from sklearn.model_selection import train_test_split
 class DataTransformer:
     def __init__(self, df, train_df):
         self.df = df
-        self.train_df
+        self.train_df = train_df
     def PowerTransformation(self,
                             standardize = True,  
                             method = 'yeo-johnson' ):
@@ -46,26 +45,12 @@ class DataTransformer:
         train_df = qt.fit_transform(self.train_df)
         df = qt.transform(self.df.copy())
         return df, qt
-        
-    def NumericConverted(self, fields_to_be_converted, bins = 10, encoding = 'onehot', strat = 'uniform'):
+    @staticmethod
+    def LogTransformer(self, column):
         '''
-         Uniform:  Each bin has the same width in the span of possible values for the variable.
-                    A uniform discretization transform will preserve the probability distribution of each input
-                    variable but will make it discrete with the specified number of ordinal groups or labels (strat = uniform)
-            
-         Quantile: Each bin has the same number of values, split based on percentiles.
-                    A quantile discretization transform will attempt to split the observations for each input variable
-                    into k groups, where the number of observations assigned to each group is approximately equal. (strat = quantile)
-            
-         Clustered: Clusters are identified and examples are assigned to each group.
-                     A k-means discretization transform will attempt to fit k clusters for each input variable and
-                     then assign each observation to a cluster. (strat = kmeans)
+        Reduces skew; good for strictly positive values.
+        Since this is row-wise transformation, it doesnt need to be done to only a training set since no data leak is happening.
         '''
-        '''
-        kbins = KBinsDiscretizer(n_bins=bins, encode=encoding, strategy=strat)
-
-        ### DONT ACTUALLY KNOW IF THIS IS CONSIDERED A DATA LEAK, SO THIS STEP MIGHT BE SOME WHAT UNNECESSARY.
-        train_df[fields_to_be_converted] = kbins.fit_transform(train_df[fields_to_be_converted])
-        df[fields_to_be_converted] = kbins.transform(df[fields_to_be_converted])
-        '''
-        return NotImplementedError
+        import numpy as np
+        return np.log1p(column)
+     

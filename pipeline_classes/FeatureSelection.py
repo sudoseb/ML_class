@@ -18,7 +18,7 @@ class feature_selection:
         raise NotImplementedError
         
     @staticmethod    
-    def numeric_fs(score_function,X_train, y_train, numericals):
+    def numeric_fs(score_function,X_train, y_train, numericals, verbose  = True):
         '''
         THERE IS A WAYS OF DOING THIS, FOR EXAMPLE;
         mutual_info_regression
