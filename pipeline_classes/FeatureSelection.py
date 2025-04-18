@@ -33,16 +33,19 @@ class feature_selection:
         
         # transform train input dat
         X_train_fsm = fsm.transform(X_train[numericals])
-                
+        scores = {numericals[i]: fsm.scores_[i] for i in range(len(fsm.scores_))}       
         metrics = {}
-        
-        for i in range(len(fsm.scores_)):
-            metrics[numericals[i]] = fsm.scores_[i]
-            if verbose: print('%s - %d: %f' % (numericals[i], i, fsm.scores_[i]))
-        return 
+
+        if verbose:
+            for i in range(len(fsm.scores_)):
+                metrics[numericals[i]] = fsm.scores_[i]
+                print('%s - %d: %f' % (numericals[i], i, fsm.scores_[i]))
+
+        sorted_features = sorted(scores.items(), key=lambda item: item[1], reverse=True)
+        return scores, sorted_features
         
     @staticmethod   
-    def recursive_regression_selection(model, X_train, y_train, fs_model = DecisionTreeRegressor(), n_splits = 5, n_repeats = 2, random_state = 1, verbose = True):
+    def recursive_regression_selection(model, X_train, y_train, scoring='explained_variance', fs_model = DecisionTreeRegressor(), n_splits = 5, n_repeats = 2, random_state = 1, verbose = True):
         '''
         THIS IS ONLY FOR NUMERIC FEATURES, THIS MEANS CATEGORICALS NEED TO BE ENCODED.
         '''
@@ -56,7 +59,7 @@ class feature_selection:
         
         # evaluate model
         cv = RepeatedKFold(n_splits=10, n_repeats=3, random_state=1)
-        n_scores = cross_val_score(pipeline, X_train, y_train, scoring='explained_variance', cv=cv, n_jobs=-1)
+        n_scores = cross_val_score(pipeline, X_train, y_train, scoring=scoring, cv=cv, n_jobs=-1)
 
         rfe.fit(X_train, y_train)
         
@@ -69,3 +72,8 @@ class feature_selection:
         columns_to_keep = [X_train.columns[i] for i in range(len(rfe.support_)) if rfe.support_[i]]
         
         return columns_to_keep
+        
+    @staticmethod
+    def permutation_importance():
+        return NotImplementedError
+    

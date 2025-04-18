@@ -1,7 +1,7 @@
 import pandas as pd
 from sklearn.model_selection import train_test_split
 
-class Scaler:
+class Scalers:
     '''
     Handles feature scaling with proper train-test separation to prevent data leakage
     
@@ -127,3 +127,52 @@ class Scaler:
         )
         
         return self.df[self.fields_to_be_scaled], scaler
+
+    def MaxAbsScaling(self):
+        '''
+        Scales each feature by its maximum absolute value.
+        Good for sparse data to preserve zero entries.
+        '''
+        from sklearn.preprocessing import MaxAbsScaler
+        scaler = MaxAbsScaler()
+        
+        self.train_df[self.fields_to_be_scaled] = scaler.fit_transform(
+            self.train_df[self.fields_to_be_scaled]
+        )
+        self.df[self.fields_to_be_scaled] = scaler.transform(
+            self.df[self.fields_to_be_scaled]
+        )
+        return self.df[self.fields_to_be_scaled], scaler
+
+    def InverseTransform(self, data, scaler):
+        '''
+        Restores scaled data to original values.
+        
+        Parameters:
+        - data: Scaled data
+        - scaler: The fitted scaler used originally
+        '''
+        return scaler.inverse_transform(data)
+
+    def ScalerTests(self):
+        '''
+        Try multiple scalers and return scaled versions for experimentation.
+        '''
+        results = {}
+        for method in [self.MinMaxScaling, self.StandardScaling, self.RobustScaling, self.MaxAbsScaling]:
+            try:
+                scaled, _ = method()
+                results[method.__name__] = scaled
+            except Exception as e:
+                results[method.__name__] = f"Error: {e}"
+        return results
+    
+
+    def SaveScaler(self, scaler, path):
+        import joblib
+        joblib.dump(scaler, path)
+
+    @staticmethod
+    def LoadScaler(path):
+        import joblib
+        return joblib.load(path)

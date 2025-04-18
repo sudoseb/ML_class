@@ -1,4 +1,4 @@
-class DataTransformer:
+class Encoders:
     def __init__(self, df, train_df, fields_to_be_encoded):
         self.df = df
         self.train_df = train_df
@@ -52,7 +52,7 @@ class DataTransformer:
             pd.DataFrame: Encoded full dataframe
             pd.DataFrame: Encoded training dataframe
         '''
-        from sklearn.preprocessing import TargetEncoder 
+        from category_encoders.target_encoder import TargetEncoder
         # Initialize encoder with all parameters
         encoder = TargetEncoder(
             smooth=smoothing,
@@ -97,6 +97,27 @@ class DataTransformer:
             df[f'{prefix}{field}'] = df[field].map(mean_encoded)
             
         return df
+
+
+    def LabelEncoding(self, keep_original=False):
+        from sklearn.preprocessing import LabelEncoder
+
+        df = self.df.copy()
+        for field in self.fields_to_be_encoded:
+            le = LabelEncoder()
+            df[f'{field}_label'] = le.fit_transform(df[field])
+            if not keep_original:
+                df = df.drop(columns=[field])
+        return df
+    def FrequencyEncoding(self, keep_original=False):
+        df = self.df.copy()
+        for field in self.fields_to_be_encoded:
+            freq = self.train_df[field].value_counts(normalize=True)
+            df[f'{field}_freq'] = df[field].map(freq)
+        if not keep_original:
+            df = df.drop(columns=self.fields_to_be_encoded)
+        return df
+
     def NumericConverted(self, fields_to_be_converted, bins = 10, encoding = 'onehot', strat = 'uniform'):
         '''
          Uniform:  Each bin has the same width in the span of possible values for the variable.
@@ -118,6 +139,20 @@ class DataTransformer:
         train_df[fields_to_be_converted] = kbins.fit_transform(train_df[fields_to_be_converted])
         df[fields_to_be_converted] = kbins.transform(df[fields_to_be_converted])
         '''
-        return NotImplementedError
-
+        from sklearn.preprocessing import KBinsDiscretizer
+        kbins = KBinsDiscretizer(n_bins=bins, encode=encoding, strategy=strat)
+        kbins.fit(self.train_df[fields_to_be_converted])
+        df = self.df.copy()
+        binned = kbins.transform(df[fields_to_be_converted])
         
+        if encoding == 'onehot':
+            import pandas as pd
+            columns = [f"{col}_bin_{i}" for col in fields_to_be_converted for i in range(bins)]
+            binned_df = pd.DataFrame(binned.toarray(), columns=columns, index=df.index)
+            df = pd.concat([df, binned_df], axis=1)
+            df = df.drop(columns=fields_to_be_converted)
+        else:
+            df[fields_to_be_converted] = binned
+        return df
+
+    
