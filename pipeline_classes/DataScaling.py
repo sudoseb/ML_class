@@ -144,15 +144,7 @@ class Scalers:
         )
         return self.df[self.fields_to_be_scaled], scaler
 
-    def InverseTransform(self, data, scaler):
-        '''
-        Restores scaled data to original values.
-        
-        Parameters:
-        - data: Scaled data
-        - scaler: The fitted scaler used originally
-        '''
-        return scaler.inverse_transform(data)
+    
 
     def ScalerTests(self):
         '''
@@ -167,11 +159,24 @@ class Scalers:
                 results[method.__name__] = f"Error: {e}"
         return results
     
-
+     
+    '''Not sure if needed for this class'''
+    def InverseTransform(self, data, scaler):
+        '''
+        Restores scaled data to original values.
+        
+        Parameters:
+        - data: Scaled data
+        - scaler: The fitted scaler used originally
+        '''
+        return scaler.inverse_transform(data)   
+    
+    '''Not sure if needed for this class'''
     def SaveScaler(self, scaler, path):
         import joblib
         joblib.dump(scaler, path)
 
+    '''Not sure if needed for this class'''
     @staticmethod
     def LoadScaler(path):
         import joblib

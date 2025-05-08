@@ -3,6 +3,9 @@ from scipy.stats import uniform, randint
 from skopt import BayesSearchCV
 from skopt.space import Real, Integer
 
+NotImplementedError
+
+
 '''
 class XGBhypertuning:
     def __init__(self, baysian = True, objective='reg:pseudohubererror', enable_categorical=True, max_depth=8, min_child_weight=1, subsample=1, colsample_bytree=0.1, gamma=0, reg_lambda=1, reg_alpha=0.1, random_state=42]):
